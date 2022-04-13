@@ -1,5 +1,7 @@
 using FlexDevSagas.Common.Config;
 using FlexDevSagas.Services.Movies.Context;
+using FlexDevSagas.Services.Movies.Dtos;
+using FlexDevSagas.Services.Movies.Entities;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,6 +42,34 @@ using (var scope = app.Services.CreateScope())
     context.Database.Migrate();
 }
 
-app.MapGet("/", () => "Hello World!");
+app.MapGet("/movies", (MovieContext context) =>
+{
+    return context.Movies.ToList();
+});
 
+app.MapGet("/scheduledMovies", (MovieContext context) =>
+{
+    return context.ScheduledMovies.ToList();
+});
+
+app.MapPost("/scheduledMovie", async (ScheduledMovieDto scheduledMovieDto, MovieContext context) =>
+{
+    var movie = context.Movies.FirstOrDefault(m => m.Id == scheduledMovieDto.MovieId);
+
+    if (movie == null)
+    {
+        throw new BadHttpRequestException("Invalid movie");
+    }
+
+    var scheduleMovie = new ScheduledMovie()
+    {
+        AuditoriumId = scheduledMovieDto.AuditoriumId,
+        End = scheduledMovieDto.End,
+        Start = scheduledMovieDto.Start,
+        Price = scheduledMovieDto.Price,
+        Movie = movie
+    };
+    context.ScheduledMovies.Add(scheduleMovie);
+    await context.SaveChangesAsync();
+});
 app.Run();

@@ -38,6 +38,7 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<CinemaContext>();
     context.Database.Migrate();
+    CinemaSeeds.Seed(context);
 }
 
 app.MapGet("/", () => "Hello World!");

@@ -1,0 +1,160 @@
+version: '3.4'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    environment:
+      - RABBITMQ_DEFAULT_VHOST=FLEXDEVSAGAS
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+        - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+        - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    networks:
+        - common
+
+  flexdevsagas.services.cinemas.database:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    hostname: cinemas_database
+    container_name: FlexDevSagas.Services.Cinemas.Database
+    environment:
+      - SA_PASSWORD=Pass@word
+      - ACCEPT_EULA=Y
+    ports:
+      - "11002:1433"
+    networks:
+      - common
+  flexdevsagas.services.booking.database:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    hostname: booking_database
+    container_name: FlexDevSagas.Services.Booking.Database
+    environment:
+      - SA_PASSWORD=Pass@word
+      - ACCEPT_EULA=Y
+    ports:
+      - "11002:1433"
+    networks:
+      - common
+  flexdevsagas.services.movies.database:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    hostname: movies_database
+    container_name: FlexDevSagas.Services.Movies.Database
+    environment:
+      - SA_PASSWORD=Pass@word
+      - ACCEPT_EULA=Y
+    ports:
+      - "11003:1433"
+    networks:
+      - common
+  flexdevsagas.services.payments.database:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    hostname: payments_database
+    container_name: FlexDevSagas.Services.Payments.Database
+    environment:
+      - SA_PASSWORD=Pass@word
+      - ACCEPT_EULA=Y
+    ports:
+      - "11004:1433"
+    networks:
+      - common
+
+  flexdevsagas.gateways.api:
+    image: ${DOCKER_REGISTRY-}flexdevsagasgatewaysapi
+    hostname: gateways_api
+    container_name: FlexDevSagas.Gateways.Api
+    build:
+      context: .
+      dockerfile: Gateways/FlexDevSagas.Gateways.Api/Dockerfile
+    networks:
+      - common
+    depends_on:
+      - flexdevsagas.services.auditoriums
+      - flexdevsagas.services.booking
+      - flexdevsagas.services.movies
+      - flexdevsagas.services.payments
+
+  flexdevsagas.services.cinemas:
+    image: ${DOCKER_REGISTRY-}flexdevsagasservicescinemas
+    hostname: services_cinemas
+    container_name: FlexDevSagas.Services.Cinemas
+    build:
+      context: .
+      dockerfile: Services/FlexDevSagas.Services.Cinemas/Dockerfile
+    environment:
+      - ConnectionStrings__Database=Server=cinemas_database,1433;Database=Master;User Id=SA;Password=Pass@word;
+      - RabbitMQConfig__Host=rabbitmq
+      - RabbitMQConfig__VirtualHost=FLEXDEVSAGAS
+      - RabbitMQConfig__Username=guest
+      - RabbitMQConfig__Password=guest
+    networks:
+      - common
+    depends_on:
+      - flexdevsagas.services.booking.database
+      - rabbitmq
+
+  flexdevsagas.services.booking:
+    image: ${DOCKER_REGISTRY-}flexdevsagasservicesbooking
+    hostname: services_booking
+    container_name: FlexDevSagas.Services.Booking
+    build:
+      context: .
+      dockerfile: Services/FlexDevSagas.Services.Booking/Dockerfile
+    environment:
+      - ConnectionStrings__Database=Server=booking_database,1433;Database=Master;User Id=SA;Password=Pass@word;
+      - RabbitMQConfig__Host=rabbitmq
+      - RabbitMQConfig__VirtualHost=FLEXDEVSAGAS
+      - RabbitMQConfig__Username=guest
+      - RabbitMQConfig__Password=guest
+    networks:
+      - common
+    depends_on:
+      - flexdevsagas.services.booking.database
+      - rabbitmq
+
+
+  flexdevsagas.services.movies:
+    image: ${DOCKER_REGISTRY-}flexdevsagasservicesmovies
+    hostname: services_movies
+    container_name: FlexDevSagas.Services.Movies
+    build:
+      context: .
+      dockerfile: Services/FlexDevSagas.Services.Movies/Dockerfile
+    environment:
+      - ConnectionStrings__Database=Server=movies_database,1433;Database=Master;User Id=SA;Password=Pass@word;
+      - RabbitMQConfig__Host=rabbitmq
+      - RabbitMQConfig__VirtualHost=FLEXDEVSAGAS
+      - RabbitMQConfig__Username=guest
+      - RabbitMQConfig__Password=guest
+    networks:
+      - common
+    depends_on:
+      - flexdevsagas.services.movies.database
+      - rabbitmq
+
+
+  flexdevsagas.services.payments:
+    image: ${DOCKER_REGISTRY-}flexdevsagasservicespayments
+    hostname: services_payments
+    container_name: FlexDevSagas.Services.Payments
+    build:
+      context: .
+      dockerfile: Services/FlexDevSagas.Services.Payments/Dockerfile
+    environment:
+      - ConnectionStrings__Database=Server=payments_database,1433;Database=Master;User Id=SA;Password=Pass@word;
+      - RabbitMQConfig__Host=rabbitmq
+      - RabbitMQConfig__VirtualHost=FLEXDEVSAGAS
+      - RabbitMQConfig__Username=guest
+      - RabbitMQConfig__Password=guest
+    networks:
+      - common
+    depends_on:
+      - flexdevsagas.services.payments.database
+      - rabbitmq
+
+networks:
+  common:
+    driver: bridge

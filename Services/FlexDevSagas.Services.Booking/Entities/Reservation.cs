@@ -7,9 +7,7 @@ namespace FlexDevSagas.Services.Booking.Entities
     {
         public Guid Id { get; set; }
 
-        [Key]
         public Guid SeatId { get; set; }
-        [Key]
         public Guid MovieId { get; set; }
     }
 }

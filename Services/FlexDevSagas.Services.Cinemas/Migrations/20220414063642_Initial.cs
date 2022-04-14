@@ -28,7 +28,7 @@ namespace FlexDevSagas.Services.Cinemas.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Number = table.Column<int>(type: "int", nullable: false),
                     Capacity = table.Column<int>(type: "int", nullable: false),
-                    CinemaId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    CinemaId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -37,7 +37,8 @@ namespace FlexDevSagas.Services.Cinemas.Migrations
                         name: "FK_Auditoriums_Cinemas_CinemaId",
                         column: x => x.CinemaId,
                         principalTable: "Cinemas",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(

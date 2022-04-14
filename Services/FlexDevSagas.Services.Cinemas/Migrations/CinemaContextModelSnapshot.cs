@@ -31,7 +31,7 @@ namespace FlexDevSagas.Services.Cinemas.Migrations
                     b.Property<int>("Capacity")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("CinemaId")
+                    b.Property<Guid>("CinemaId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Number")
@@ -99,9 +99,13 @@ namespace FlexDevSagas.Services.Cinemas.Migrations
 
             modelBuilder.Entity("FlexDevSagas.Services.Cinemas.Entities.Auditorium", b =>
                 {
-                    b.HasOne("FlexDevSagas.Services.Cinemas.Entities.Cinema", null)
+                    b.HasOne("FlexDevSagas.Services.Cinemas.Entities.Cinema", "Cinema")
                         .WithMany("Auditoriums")
-                        .HasForeignKey("CinemaId");
+                        .HasForeignKey("CinemaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cinema");
                 });
 
             modelBuilder.Entity("FlexDevSagas.Services.Cinemas.Entities.Row", b =>

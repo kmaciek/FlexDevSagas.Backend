@@ -6,6 +6,15 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
 var connectionString = builder.Configuration.GetConnectionString("Database");
 builder.Services.AddDbContext<MovieContext>(options =>
     options.UseSqlServer(connectionString));
@@ -34,25 +43,38 @@ builder.Services.AddMassTransit(cfg =>
 });
 
 var app = builder.Build();
-
+app.UseCors("AllowAll");
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<MovieContext>();
     context.Database.Migrate();
+    MovieSeeds.Seed(context);
 }
 
-app.MapGet("/movies", (MovieContext context) =>
-{
-    return context.Movies.ToList();
-});
+app.MapGet("/movies", (MovieContext context) => context.Movies.ToList());
 
-app.MapGet("/scheduledMovies", (MovieContext context) =>
-{
-    return context.ScheduledMovies.ToList();
-});
+app.MapGet("/scheduledMovies", (MovieContext context) => context.ScheduledMovies.Include(sm => sm.Movie).OrderBy(sm => sm.Start).ToList());
 
-app.MapPost("/scheduledMovie", async (ScheduledMovieDto scheduledMovieDto, MovieContext context) =>
+app.MapGet("/scheduledMovies/findByCinema/{id:guid}",
+    (Guid id, MovieContext context) =>
+    {
+        return context.ScheduledMovies
+            .Include(sm => sm.Movie)
+            .Where(sm => sm.CinemaId == id)
+            .OrderBy(sm => sm.Start)
+            .Select(sm => new GetScheduledMovieDto(
+                sm.Id,
+                sm.AuditoriumId,
+                sm.CinemaId,
+                TimeZoneInfo.ConvertTimeFromUtc(sm.Start, TimeZoneInfo.Local),
+                TimeZoneInfo.ConvertTimeFromUtc(sm.End, TimeZoneInfo.Local),
+                sm.Price,
+                new MovieDto(sm.Movie.Id, sm.Movie.Name)
+            ));
+    });
+
+app.MapPost("/scheduledMovies", async (PostScheduledMovieDto scheduledMovieDto, MovieContext context) =>
 {
     var movie = context.Movies.FirstOrDefault(m => m.Id == scheduledMovieDto.MovieId);
 
@@ -64,10 +86,11 @@ app.MapPost("/scheduledMovie", async (ScheduledMovieDto scheduledMovieDto, Movie
     var scheduleMovie = new ScheduledMovie()
     {
         AuditoriumId = scheduledMovieDto.AuditoriumId,
-        End = scheduledMovieDto.End,
-        Start = scheduledMovieDto.Start,
+        End = TimeZoneInfo.ConvertTimeToUtc(scheduledMovieDto.End),
+        Start = TimeZoneInfo.ConvertTimeToUtc(scheduledMovieDto.Start),
         Price = scheduledMovieDto.Price,
-        Movie = movie
+        Movie = movie,
+        CinemaId = scheduledMovieDto.CinemaId
     };
     context.ScheduledMovies.Add(scheduleMovie);
     await context.SaveChangesAsync();

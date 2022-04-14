@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace FlexDevSagas.Services.Cinemas.Entities
 {
@@ -13,7 +14,7 @@ namespace FlexDevSagas.Services.Cinemas.Entities
         public int Number { get; set; }
         public int Capacity { get; set; }
         public List<Row> Rows { get; set; }
-        [ForeignKey("Auditorium_Cinema")]
+        [JsonIgnore]
         public Cinema Cinema { get; set; }
     }
 }

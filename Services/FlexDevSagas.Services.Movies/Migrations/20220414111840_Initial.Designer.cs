@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FlexDevSagas.Services.Movies.Migrations
 {
     [DbContext(typeof(MovieContext))]
-    [Migration("20220413113620_Initial")]
+    [Migration("20220414111840_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,27 +41,31 @@ namespace FlexDevSagas.Services.Movies.Migrations
 
             modelBuilder.Entity("FlexDevSagas.Services.Movies.Entities.ScheduledMovie", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("AuditoriumId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CinemaId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("End")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("MovieId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Price")
                         .HasColumnType("int");
-
-                    b.Property<Guid>("ScheduledMovie_Movie")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("Start")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ScheduledMovie_Movie");
+                    b.HasIndex("MovieId");
 
                     b.ToTable("ScheduledMovies");
                 });
@@ -70,7 +74,7 @@ namespace FlexDevSagas.Services.Movies.Migrations
                 {
                     b.HasOne("FlexDevSagas.Services.Movies.Entities.Movie", "Movie")
                         .WithMany("ScheduledMovies")
-                        .HasForeignKey("ScheduledMovie_Movie")
+                        .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

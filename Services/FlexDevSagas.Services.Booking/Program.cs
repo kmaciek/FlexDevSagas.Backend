@@ -4,6 +4,15 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
 var connectionString = builder.Configuration.GetConnectionString("Database");
 builder.Services.AddDbContext<BookingContext>(options =>
     options.UseSqlServer(connectionString));
@@ -32,7 +41,7 @@ builder.Services.AddMassTransit(cfg =>
 });
 
 var app = builder.Build();
-
+app.UseCors("AllowAll");
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -40,6 +49,5 @@ using (var scope = app.Services.CreateScope())
     context.Database.Migrate();
 }
 
-app.MapGet("/", () => "Hello World!");
-
+app.MapGet("/", (BookingContext context) => context.Reservations.ToList());
 app.Run();

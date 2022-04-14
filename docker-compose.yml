@@ -25,7 +25,7 @@ services:
       - SA_PASSWORD=Pass@word
       - ACCEPT_EULA=Y
     ports:
-      - "11002:1433"
+      - "11001:1433"
     networks:
       - common
   flexdevsagas.services.booking.database:
@@ -50,17 +50,6 @@ services:
       - "11003:1433"
     networks:
       - common
-  flexdevsagas.services.payments.database:
-    image: mcr.microsoft.com/mssql/server:2019-latest
-    hostname: payments_database
-    container_name: FlexDevSagas.Services.Payments.Database
-    environment:
-      - SA_PASSWORD=Pass@word
-      - ACCEPT_EULA=Y
-    ports:
-      - "11004:1433"
-    networks:
-      - common
 
   flexdevsagas.gateways.api:
     image: ${DOCKER_REGISTRY-}flexdevsagasgatewaysapi
@@ -72,10 +61,9 @@ services:
     networks:
       - common
     depends_on:
-      - flexdevsagas.services.auditoriums
+      - flexdevsagas.services.cinemas
       - flexdevsagas.services.booking
       - flexdevsagas.services.movies
-      - flexdevsagas.services.payments
 
   flexdevsagas.services.cinemas:
     image: ${DOCKER_REGISTRY-}flexdevsagasservicescinemas
@@ -93,7 +81,7 @@ services:
     networks:
       - common
     depends_on:
-      - flexdevsagas.services.booking.database
+      - flexdevsagas.services.cinemas.database
       - rabbitmq
 
   flexdevsagas.services.booking:
@@ -133,26 +121,6 @@ services:
       - common
     depends_on:
       - flexdevsagas.services.movies.database
-      - rabbitmq
-
-
-  flexdevsagas.services.payments:
-    image: ${DOCKER_REGISTRY-}flexdevsagasservicespayments
-    hostname: services_payments
-    container_name: FlexDevSagas.Services.Payments
-    build:
-      context: .
-      dockerfile: Services/FlexDevSagas.Services.Payments/Dockerfile
-    environment:
-      - ConnectionStrings__Database=Server=payments_database,1433;Database=Master;User Id=SA;Password=Pass@word;
-      - RabbitMQConfig__Host=rabbitmq
-      - RabbitMQConfig__VirtualHost=FLEXDEVSAGAS
-      - RabbitMQConfig__Username=guest
-      - RabbitMQConfig__Password=guest
-    networks:
-      - common
-    depends_on:
-      - flexdevsagas.services.payments.database
       - rabbitmq
 
 networks:

@@ -4,6 +4,15 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
 var connectionString = builder.Configuration.GetConnectionString("Database");
 builder.Services.AddDbContext<CinemaContext>(options =>
     options.UseSqlServer(connectionString));
@@ -32,7 +41,7 @@ builder.Services.AddMassTransit(cfg =>
 });
 
 var app = builder.Build();
-
+app.UseCors("AllowAll");
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -41,6 +50,22 @@ using (var scope = app.Services.CreateScope())
     CinemaSeeds.Seed(context);
 }
 
-app.MapGet("/", () => "Hello World!");
+app.MapGet("/cinemas", (CinemaContext context) =>
+{
+    return context.Cinemas
+        .Include(c => c.Auditoriums)
+        .ThenInclude(a => a.Rows)
+        .ThenInclude(r => r.Seats)
+        .ToList();
+});
+app.MapGet("/cinemas/{id:guid}", (Guid id, CinemaContext context) =>
+{
+    return context.Cinemas
+        .Include(c => c.Auditoriums)
+        .ThenInclude(a => a.Rows)
+        .ThenInclude(r => r.Seats)
+        .FirstOrDefault(c => c.Id == id);
+});
+app.MapGet("/auditoriums", (CinemaContext context) => context.Auditoriums.Include(a => a.Rows).ToList());
 
 app.Run();

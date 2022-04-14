@@ -1,0 +1,127 @@
+{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/cinemas",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "services_cinemas",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/cinemas",
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/cinemas/{action}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "services_cinemas",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/cinemas/{action}",
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/auditoriums",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "services_cinemas",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/auditoriums",
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/auditoriums/{action}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "services_cinemas",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/auditoriums/{action}",
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "services_booking",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/booking",
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/{action}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "services_booking",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/booking/{action}",
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/movies",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "services_movies",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/movies",
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/{action}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "services_movies",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/movies/{action}",
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/scheduledMovies",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "services_movies",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/scheduledMovies",
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/scheduledMovies/{action}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "services_movies",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/scheduledMovies/{action}",
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }
+  ],
+  "GlobalConfiguration": {
+    "RequestIdKey": "OcRequestId"
+  }
+}

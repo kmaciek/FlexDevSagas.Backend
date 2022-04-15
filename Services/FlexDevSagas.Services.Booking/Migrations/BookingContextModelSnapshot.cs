@@ -33,6 +33,12 @@ namespace FlexDevSagas.Services.Booking.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("Paid")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.HasKey("MovieId", "SeatId");
 
                     b.HasIndex("Id")

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FlexDevSagas.Services.Booking.Migrations
 {
     [DbContext(typeof(BookingContext))]
-    [Migration("20220413113457_Initial")]
+    [Migration("20220415091925_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,6 +34,12 @@ namespace FlexDevSagas.Services.Booking.Migrations
 
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Paid")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("MovieId", "SeatId");
 

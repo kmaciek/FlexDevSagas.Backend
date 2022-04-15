@@ -1,4 +1,7 @@
 using FlexDevSagas.Common.Config;
+using FlexDevSagas.Common.Requests;
+using FlexDevSagas.Common.Responses;
+using FlexDevSagas.Services.Movies.Consumers;
 using FlexDevSagas.Services.Movies.Context;
 using FlexDevSagas.Services.Movies.Dtos;
 using FlexDevSagas.Services.Movies.Entities;
@@ -24,7 +27,7 @@ builder.Configuration.Bind("RabbitMQConfig", rabbitMqConfig);
 builder.Services.AddMassTransit(cfg =>
 {
     cfg.SetKebabCaseEndpointNameFormatter();
-    //cfg.AddConsumersFromNamespaceContaining<ConsumerAnchor>();
+    cfg.AddConsumersFromNamespaceContaining<ConsumerAnchor>();
     cfg.UsingRabbitMq((x, y) =>
     {
         y.Host(rabbitMqConfig.Host, rabbitMqConfig.VirtualHost, h =>
@@ -33,10 +36,9 @@ builder.Services.AddMassTransit(cfg =>
             h.Password(rabbitMqConfig.Password);
         });
 
-        //var endpointNameFormatter = x.GetRequiredService<IEndpointNameFormatter>();
-        //EndpointConvention.Map<SendMessageEvent>(new Uri($"queue:{endpointNameFormatter.Consumer<SendMessageEventConsumer>()}"));
-        //EndpointConvention.Map<UserCreateCompletedEvent>(new Uri($"queue:{endpointNameFormatter.Message<UserCreateCompletedEvent>()}"));
-        //EndpointConvention.Map<ProcessEmailConfirmationSendEvent>(new Uri($"queue:{endpointNameFormatter.Consumer<ProcessEmailConfirmationSendEventConsumer>()}"));
+        var endpointNameFormatter = x.GetRequiredService<IEndpointNameFormatter>();
+        EndpointConvention.Map<GetScheduledMovieDetailsRequest>(new Uri($"queue:{endpointNameFormatter.Consumer<GetScheduledMovieDetailsRequestConsumer>()}"));
+        EndpointConvention.Map<GetScheduledMovieDetailsResponse>(new Uri($"queue:{endpointNameFormatter.Message<GetScheduledMovieDetailsResponse>()}"));
 
         y.ConfigureEndpoints(x);
     });

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FlexDevSagas.Services.Cinemas.Migrations
 {
     [DbContext(typeof(CinemaContext))]
-    [Migration("20220414063642_Initial")]
+    [Migration("20220415091957_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

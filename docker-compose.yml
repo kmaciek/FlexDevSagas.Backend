@@ -50,6 +50,17 @@ services:
       - "11003:1433"
     networks:
       - common
+  flexdevsagas.services.orders.database:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    hostname: orders_database
+    container_name: FlexDevSagas.Services.Orders.Database
+    environment:
+      - SA_PASSWORD=Pass@word
+      - ACCEPT_EULA=Y
+    ports:
+      - "11004:1433"
+    networks:
+      - common
 
   flexdevsagas.gateways.api:
     image: ${DOCKER_REGISTRY-}flexdevsagasgatewaysapi
@@ -64,6 +75,7 @@ services:
       - flexdevsagas.services.cinemas
       - flexdevsagas.services.booking
       - flexdevsagas.services.movies
+      - flexdevsagas.services.orders
 
   flexdevsagas.services.cinemas:
     image: ${DOCKER_REGISTRY-}flexdevsagasservicescinemas
@@ -121,6 +133,25 @@ services:
       - common
     depends_on:
       - flexdevsagas.services.movies.database
+      - rabbitmq
+
+  flexdevsagas.services.orders:
+    image: ${DOCKER_REGISTRY-}flexdevsagasservicesorders
+    hostname: services_orders
+    container_name: FlexDevSagas.Services.Orders
+    build:
+      context: .
+      dockerfile: Services/FlexDevSagas.Services.Orders/Dockerfile
+    environment:
+      - ConnectionStrings__Database=Server=orders_database,1433;Database=Master;User Id=SA;Password=Pass@word;
+      - RabbitMQConfig__Host=rabbitmq
+      - RabbitMQConfig__VirtualHost=FLEXDEVSAGAS
+      - RabbitMQConfig__Username=guest
+      - RabbitMQConfig__Password=guest
+    networks:
+      - common
+    depends_on:
+      - flexdevsagas.services.cosmos.database
       - rabbitmq
 
 networks:

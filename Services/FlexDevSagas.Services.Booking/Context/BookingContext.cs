@@ -14,8 +14,6 @@ namespace FlexDevSagas.Services.Booking.Context
             modelBuilder.Entity<Reservation>()
                 .HasIndex(r => r.Id)
                 .IsUnique();
-            modelBuilder.Entity<Reservation>()
-                .HasKey(r => new {r.MovieId, r.SeatId});
         }
     }
 }

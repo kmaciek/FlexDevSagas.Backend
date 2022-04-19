@@ -1,7 +1,11 @@
 using FlexDevSagas.Common.Config;
+using FlexDevSagas.Common.Events;
+using FlexDevSagas.Common.Message;
 using FlexDevSagas.Common.Requests;
 using FlexDevSagas.Common.Responses;
+using FlexDevSagas.Services.Booking.Consumers;
 using FlexDevSagas.Services.Booking.Context;
+using FlexDevSagas.Services.Booking.Entities;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,9 +28,10 @@ builder.Configuration.Bind("RabbitMQConfig", rabbitMqConfig);
 builder.Services.AddMassTransit(cfg =>
 {
     cfg.SetKebabCaseEndpointNameFormatter();
-    //cfg.AddConsumersFromNamespaceContaining<ConsumerAnchor>();
+    cfg.AddConsumersFromNamespaceContaining<ConsumerAnchor>();
     cfg.UsingRabbitMq((x, y) =>
     {
+
         y.Host(rabbitMqConfig.Host, rabbitMqConfig.VirtualHost, h =>
         {
             h.Username(rabbitMqConfig.Username);
@@ -37,7 +42,8 @@ builder.Services.AddMassTransit(cfg =>
         EndpointConvention.Map<GetAuditoriumDetailsRequest>(new Uri($"queue:{endpointNameFormatter.Message<GetAuditoriumDetailsRequest>()}"));
         EndpointConvention.Map<GetScheduledMovieDetailsRequest>(new Uri($"queue:{endpointNameFormatter.Message<GetScheduledMovieDetailsRequest>()}"));
         EndpointConvention.Map<GetScheduledMovieDetailsResponse>(new Uri($"queue:{endpointNameFormatter.Message<GetScheduledMovieDetailsResponse>()}"));
-        EndpointConvention.Map<GetScheduledMovieDetailsResponse>(new Uri($"queue:{endpointNameFormatter.Message<GetScheduledMovieDetailsResponse>()}"));
+        EndpointConvention.Map<ReserveSeatsMessage>(new Uri($"queue:{endpointNameFormatter.Consumer<ReserveSeatsMessageConsumer>()}"));
+        EndpointConvention.Map<SeatsReservedEvent>(new Uri($"queue:{endpointNameFormatter.Message<SeatsReservedEvent>()}"));
 
         y.ConfigureEndpoints(x);
     });
@@ -58,7 +64,10 @@ app.MapGet("/getScheduledMovieBookingDetails/{scheduledMovieId:guid}", async (
     IRequestClient<GetScheduledMovieDetailsRequest> scheduledMovieDetailsRequestClient,
     IRequestClient<GetAuditoriumDetailsRequest> auditoriumDetailsRequestClient) =>
 {
-    var reservations = context.Reservations.Where(r => r.MovieId == scheduledMovieId).ToList();
+    var reservations = context.Reservations
+        .Where(r => r.MovieId == scheduledMovieId 
+                    && (r.Status == ReservationStatus.Reserved || r.Status == ReservationStatus.Collected))
+        .ToList();
 
     var movieRequest = new GetScheduledMovieDetailsRequest(scheduledMovieId);
     var movieDetails =

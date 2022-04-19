@@ -3,7 +3,7 @@
     public enum ReservationStatus
     {
         Reserved,
-        Paid,
-        Collected
+        Collected,
+        Released
     }
 }

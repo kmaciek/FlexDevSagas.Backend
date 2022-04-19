@@ -24,22 +24,23 @@ namespace FlexDevSagas.Services.Booking.Migrations
 
             modelBuilder.Entity("FlexDevSagas.Services.Booking.Entities.Reservation", b =>
                 {
-                    b.Property<Guid>("MovieId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("SeatId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("MovieId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("Paid")
                         .HasColumnType("bit");
 
+                    b.Property<Guid>("SeatId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.HasKey("MovieId", "SeatId");
+                    b.HasKey("Id");
 
                     b.HasIndex("Id")
                         .IsUnique();

@@ -6,6 +6,11 @@ namespace FlexDevSagas.Services.Orders.Entities
     {
         [Key]
         public Guid Id { get; set; }
-        public List<Guid> Reservations { get; set; }
+        public IEnumerable<Guid> Reservations { get; set; }
+
+        public IEnumerable<Guid> Seats { get; set; }
+        public Guid ScheduledMovieId { get; set; }
+        public int TotalPrice { get; set; }
+        public OrderState OrderState { get; set; }
     }
 }

@@ -119,6 +119,30 @@
       ],
       "UpstreamPathTemplate": "/scheduledMovies/{action}",
       "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "services_orders",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/orders",
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/{action}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "services_orders",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/orders/{action}",
+      "DangerousAcceptAnyServerCertificateValidator": true
     }
   ],
   "GlobalConfiguration": {

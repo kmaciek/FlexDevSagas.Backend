@@ -46,6 +46,7 @@ builder.Services.AddMassTransit(cfg =>
         EndpointConvention.Map<SeatsReservedEvent>(new Uri($"queue:{endpointNameFormatter.Message<SeatsReservedEvent>()}"));
         EndpointConvention.Map<GetReservationDetailsMessage>(new Uri($"queue:{endpointNameFormatter.Consumer<GetReservationDetailsMessageConsumer>()}"));
         EndpointConvention.Map<GetReservationDetailsResponse>(new Uri($"queue:{endpointNameFormatter.Message<GetReservationDetailsResponse>()}"));
+        EndpointConvention.Map<CollectedSeatsMessage>(new Uri($"queue:{endpointNameFormatter.Consumer<CollectedSeatsMessageConsumer>()}"));
 
         y.ConfigureEndpoints(x);
     });
@@ -59,6 +60,32 @@ using (var scope = app.Services.CreateScope())
     var context = services.GetRequiredService<BookingContext>();
     context.Database.Migrate();
 }
+
+app.MapGet("/reservations", async (
+    BookingContext context,
+    IRequestClient<GetScheduledMoviesDetailsRequest> scheduledMoviesRequestClient,
+    IRequestClient<GetSeatsDetailsRequest> seatsDetailsRequestClient) =>
+{
+    var reservations = context.Reservations.ToList();
+    var movieIds = reservations.Select(x => x.MovieId).Distinct();
+    var seatIds = reservations.Select(x => x.SeatId).Distinct();
+
+    var movieDetailsRequest = new GetScheduledMoviesDetailsRequest(movieIds);
+    var moviesDetails = await scheduledMoviesRequestClient.GetResponse<GetScheduledMoviesDetailsResponse>(movieDetailsRequest);
+
+    var seatsDetailsRequest = new GetSeatsDetailsRequest(seatIds);
+    var seatsDetails = await seatsDetailsRequestClient.GetResponse<GetSeatsDetailsResponse>(seatsDetailsRequest);
+
+    return reservations.Select(x => new
+    {
+        x.Id,
+        x.MovieId,
+        movieName = moviesDetails.Message.Movies.FirstOrDefault(y => y.Id == x.MovieId)?.MovieName,
+        x.SeatId,
+        seat = $"{seatsDetails.Message.Seats.FirstOrDefault(y => y.Id == x.SeatId)?.Row}-{seatsDetails.Message.Seats.FirstOrDefault(y => y.Id == x.SeatId)?.Number}",
+        Status = x.Status.ToString()
+    });
+});
 
 app.MapGet("/getScheduledMovieBookingDetails/{scheduledMovieId:guid}", async (
     Guid scheduledMovieId,

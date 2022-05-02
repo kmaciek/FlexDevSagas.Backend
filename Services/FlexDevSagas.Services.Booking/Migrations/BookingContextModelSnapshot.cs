@@ -34,9 +34,6 @@ namespace FlexDevSagas.Services.Booking.Migrations
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("Paid")
-                        .HasColumnType("bit");
-
                     b.Property<Guid>("SeatId")
                         .HasColumnType("uniqueidentifier");
 

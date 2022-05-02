@@ -73,6 +73,7 @@ builder.Services.AddMassTransit(cfg =>
         EndpointConvention.Map<GetScheduledMoviesDetailsResponse>(new Uri($"queue:{endpointNameFormatter.Message<GetScheduledMoviesDetailsResponse>()}"));
         EndpointConvention.Map<GetSeatsDetailsRequest>(new Uri($"queue:{endpointNameFormatter.Message<GetSeatsDetailsRequest>()}"));
         EndpointConvention.Map<GetSeatsDetailsResponse>(new Uri($"queue:{endpointNameFormatter.Message<GetSeatsDetailsResponse>()}"));
+        EndpointConvention.Map<CollectedSeatsMessage>(new Uri($"queue:{endpointNameFormatter.Message<CollectedSeatsMessage>()}"));
 
         
         y.ConfigureEndpoints(x);
@@ -155,18 +156,37 @@ app.MapGet("/{id:guid}/paid", async (
     return Results.Ok();
 });
 
-app.MapGet("/{id:guid}/ticketsCollected", async (Guid id, 
+app.MapGet("/{id:guid}/ticketsCollected", async (Guid id,
+    OrdersContext context,
     OrderSagaDbContext ordersSagaContext,
     IBus bus) =>
 {
     var sagaInstance = await ordersSagaContext.OrderSagaStates.FirstOrDefaultAsync(o => o.OrderId == id);
-
-    if (sagaInstance == null)
+    var order = context.Orders.FirstOrDefault(x => x.Id == id);
+    
+    if (sagaInstance == null || order == null)
     {
         return Results.NotFound();
     }
 
-    await bus.Publish(new TicketsCollectedEvent(sagaInstance.CorrelationId));
+    await bus.Publish(new TicketsCollectedEvent(sagaInstance.CorrelationId, order.Reservations));
+    return Results.Ok();
+});
+
+app.MapGet("/{id:guid}/cancelled", async (Guid id,
+    OrdersContext orderContext,
+    OrderSagaDbContext ordersSagaContext,
+    IBus bus) =>
+{
+    var order = await orderContext.Orders.FirstOrDefaultAsync(x => x.Id == id);
+    var sagaInstance = await ordersSagaContext.OrderSagaStates.FirstOrDefaultAsync(o => o.OrderId == id);
+
+    if (sagaInstance == null || order == null)
+    {
+        return Results.NotFound();
+    }
+
+    await bus.Publish(new OrderCancelledEvent(sagaInstance.CorrelationId, order.Reservations));
     return Results.Ok();
 });
 

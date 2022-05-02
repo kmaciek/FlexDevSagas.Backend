@@ -41,7 +41,7 @@ namespace FlexDevSagas.Services.Orders.Sagas.Order
             During(OrderCreated,
                 When(SeatsReserved)
                     .ThenAsync((context) => UpdateOrderStatus(context, OrderState.Reserved))
-                    .ThenAsync((context) => UpdateReservedSeats(context))
+                    .ThenAsync(UpdateReservedSeats)
                     .TransitionTo(Reserved),
                 When(SeatsReservationRejected)
                     .ThenAsync((context) => UpdateOrderStatus(context, OrderState.Failed))
@@ -55,7 +55,8 @@ namespace FlexDevSagas.Services.Orders.Sagas.Order
             During(Paid,
                 When(TicketsCollected)
                     .TransitionTo(Finished)
-                    .ThenAsync((context) => UpdateOrderStatus(context, OrderState.Finished)),
+                    .ThenAsync((context) => UpdateOrderStatus(context, OrderState.Finished))
+                    .ThenAsync(CollectTickets),
                 When(OrderCancelled)
                     .ThenAsync(ReleaseSeats)
                     .ThenAsync(ReturnPayment));
@@ -70,6 +71,13 @@ namespace FlexDevSagas.Services.Orders.Sagas.Order
 
                 return Finished!.Equals(currentState) || Failed!.Equals(currentState) || Cancelled!.Equals(currentState);
             });
+        }
+
+        private async Task CollectTickets(BehaviorContext<OrderSagaState, TicketsCollectedEvent> context)
+        {
+            var message = new CollectedSeatsMessage(context.Message.ReservationIds);
+            
+            await context.Publish(message);
         }
 
         private async Task UpdateReservedSeats(BehaviorContext<OrderSagaState, SeatsReservedEvent> context)

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FlexDevSagas.Services.Booking.Migrations
 {
     [DbContext(typeof(BookingContext))]
-    [Migration("20220502112254_Updated")]
-    partial class Updated
+    [Migration("20220502135243_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -35,9 +35,6 @@ namespace FlexDevSagas.Services.Booking.Migrations
 
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("Paid")
-                        .HasColumnType("bit");
 
                     b.Property<Guid>("SeatId")
                         .HasColumnType("uniqueidentifier");

@@ -16,7 +16,7 @@ namespace FlexDevSagas.Services.Booking.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SeatId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     MovieId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Paid = table.Column<bool>(type: "bit", nullable: false),
+                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

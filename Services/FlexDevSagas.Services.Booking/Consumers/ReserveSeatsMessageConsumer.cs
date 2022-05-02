@@ -14,7 +14,7 @@ namespace FlexDevSagas.Services.Booking.Consumers
         {
             _dbContext = context;
         }
-        
+
         public async Task Consume(ConsumeContext<ReserveSeatsMessage> context)
         {
             if (context.Message.ReservedSeats.Count() > 5)
@@ -23,7 +23,7 @@ namespace FlexDevSagas.Services.Booking.Consumers
                     context.Message.CorrelationId));
                 return;
             }
-            
+
             var reservations = new List<Reservation>();
 
             foreach (var seat in context.Message.ReservedSeats)
@@ -40,8 +40,9 @@ namespace FlexDevSagas.Services.Booking.Consumers
             }
 
             _dbContext.Reservations.AddRange(reservations);
+
             await _dbContext.SaveChangesAsync();
-            
+
             await context.Publish(new SeatsReservedEvent(
                 context.Message.CorrelationId,
                 reservations.Select(x => x.Id)));

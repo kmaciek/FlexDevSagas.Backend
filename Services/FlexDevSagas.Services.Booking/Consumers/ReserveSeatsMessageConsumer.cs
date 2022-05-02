@@ -32,7 +32,8 @@ namespace FlexDevSagas.Services.Booking.Consumers
                 {
                     SeatId = seat,
                     MovieId = context.Message.ScheduledMovieId,
-                    Status = ReservationStatus.Reserved
+                    Status = ReservationStatus.Reserved,
+                    OrderId = context.Message.OrderId
                 };
 
                 reservations.Add(reservation);

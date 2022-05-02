@@ -4,6 +4,12 @@ namespace FlexDevSagas.Services.Orders.Entities
 {
     public class Order
     {
+        public Order()
+        {
+            Reservations = new List<Guid>();
+            Seats = new List<Guid>();
+        }
+
         [Key]
         public Guid Id { get; set; }
         public IEnumerable<Guid> Reservations { get; set; }

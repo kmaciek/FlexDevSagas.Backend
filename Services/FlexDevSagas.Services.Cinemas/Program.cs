@@ -37,6 +37,8 @@ builder.Services.AddMassTransit(cfg =>
         var endpointNameFormatter = x.GetRequiredService<IEndpointNameFormatter>();
         EndpointConvention.Map<GetAuditoriumDetailsRequest>(new Uri($"queue:{endpointNameFormatter.Consumer<GetAuditoriumDetailsRequestConsumer>()}"));
         EndpointConvention.Map<GetAuditoriumDetailsResponse>(new Uri($"queue:{endpointNameFormatter.Message<GetAuditoriumDetailsResponse>()}"));
+        EndpointConvention.Map<GetSeatsDetailsRequest>(new Uri($"queue:{endpointNameFormatter.Consumer<GetSeatsDetailsRequestConsumer>()}"));
+        EndpointConvention.Map<GetSeatsDetailsResponse>(new Uri($"queue:{endpointNameFormatter.Message<GetSeatsDetailsResponse>()}"));
 
         y.ConfigureEndpoints(x);
     });

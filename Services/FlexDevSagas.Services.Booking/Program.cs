@@ -44,6 +44,8 @@ builder.Services.AddMassTransit(cfg =>
         EndpointConvention.Map<GetScheduledMovieDetailsResponse>(new Uri($"queue:{endpointNameFormatter.Message<GetScheduledMovieDetailsResponse>()}"));
         EndpointConvention.Map<ReserveSeatsMessage>(new Uri($"queue:{endpointNameFormatter.Consumer<ReserveSeatsMessageConsumer>()}"));
         EndpointConvention.Map<SeatsReservedEvent>(new Uri($"queue:{endpointNameFormatter.Message<SeatsReservedEvent>()}"));
+        EndpointConvention.Map<GetReservationDetailsMessage>(new Uri($"queue:{endpointNameFormatter.Consumer<GetReservationDetailsMessageConsumer>()}"));
+        EndpointConvention.Map<GetReservationDetailsResponse>(new Uri($"queue:{endpointNameFormatter.Message<GetReservationDetailsResponse>()}"));
 
         y.ConfigureEndpoints(x);
     });

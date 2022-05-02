@@ -3,6 +3,8 @@ using FlexDevSagas.Common.Config;
 using FlexDevSagas.Common.Events;
 using FlexDevSagas.Common.Message;
 using FlexDevSagas.Common.Providers;
+using FlexDevSagas.Common.Requests;
+using FlexDevSagas.Common.Responses;
 using FlexDevSagas.Services.Orders.Consumers;
 using FlexDevSagas.Services.Orders.Context;
 using FlexDevSagas.Services.Orders.Dtos;
@@ -64,6 +66,14 @@ builder.Services.AddMassTransit(cfg =>
         EndpointConvention.Map<OrderSagaStartedEvent>(new Uri($"queue:{endpointNameFormatter.Message<OrderSagaStartedEvent>()}"));
         EndpointConvention.Map<SeatsReservedEvent>(new Uri($"queue:{endpointNameFormatter.Message<SeatsReservedEvent>()}"));
         EndpointConvention.Map<OrderStatusChangedEvent>(new Uri($"queue:{endpointNameFormatter.Message<SeatsReservedEvent>()}"));
+        EndpointConvention.Map<OrderReservationChangedEvent>(new Uri($"queue:{endpointNameFormatter.Consumer<OrderReservationChangedEventConsumer>()}"));
+        EndpointConvention.Map<GetReservationDetailsMessage>(new Uri($"queue:{endpointNameFormatter.Message<GetReservationDetailsMessage>()}"));
+        EndpointConvention.Map<GetReservationDetailsResponse>(new Uri($"queue:{endpointNameFormatter.Message<GetReservationDetailsResponse>()}"));
+        EndpointConvention.Map<GetScheduledMoviesDetailsRequest>(new Uri($"queue:{endpointNameFormatter.Message<GetScheduledMoviesDetailsRequest>()}"));
+        EndpointConvention.Map<GetScheduledMoviesDetailsResponse>(new Uri($"queue:{endpointNameFormatter.Message<GetScheduledMoviesDetailsResponse>()}"));
+        EndpointConvention.Map<GetSeatsDetailsRequest>(new Uri($"queue:{endpointNameFormatter.Message<GetSeatsDetailsRequest>()}"));
+        EndpointConvention.Map<GetSeatsDetailsResponse>(new Uri($"queue:{endpointNameFormatter.Message<GetSeatsDetailsResponse>()}"));
+
         
         y.ConfigureEndpoints(x);
     });
@@ -107,10 +117,10 @@ app.MapGet("/", (OrdersContext dbContext) =>
             o.TotalPrice,
             o.OrderState.ToString())).ToList();
     
-    return new GetOrdersListDto(orders);
+    return orders;
 });
 
-app.MapGet("/{id:guid}", (Guid id, OrdersContext dbContext) =>
+app.MapGet("/{id:guid}", async (Guid id, OrdersContext dbContext, IRequestClient<GetReservationDetailsMessage> reservationDetailsRequestClient) =>
 {
     var order = dbContext.Orders.FirstOrDefault(o => o.Id == id);
 
@@ -119,12 +129,45 @@ app.MapGet("/{id:guid}", (Guid id, OrdersContext dbContext) =>
         return Results.NotFound();
     }
 
+    var request = new GetReservationDetailsMessage(id);
+    var details = await reservationDetailsRequestClient.GetResponse<GetReservationDetailsResponse>(request);
+
     return Results.Ok(new OrderDetailsDto(
         order.Id,
-        order.Reservations,
-        order.ScheduledMovieId,
+        details.Message.Movies,
         order.TotalPrice,
         order.OrderState.ToString()));
+});
+
+app.MapGet("/{id:guid}/paid", async (
+    Guid id,
+    OrderSagaDbContext ordersSagaContext,
+    IBus bus) =>
+{
+    var sagaInstance = await ordersSagaContext.OrderSagaStates.FirstOrDefaultAsync(o => o.OrderId == id);
+
+    if (sagaInstance == null)
+    {
+        return Results.NotFound();
+    }
+    
+    await bus.Publish(new OrderPaidEvent(sagaInstance.CorrelationId));
+    return Results.Ok();
+});
+
+app.MapGet("/{id:guid}/ticketsCollected", async (Guid id, 
+    OrderSagaDbContext ordersSagaContext,
+    IBus bus) =>
+{
+    var sagaInstance = await ordersSagaContext.OrderSagaStates.FirstOrDefaultAsync(o => o.OrderId == id);
+
+    if (sagaInstance == null)
+    {
+        return Results.NotFound();
+    }
+
+    await bus.Publish(new TicketsCollectedEvent(sagaInstance.CorrelationId));
+    return Results.Ok();
 });
 
 app.Run();

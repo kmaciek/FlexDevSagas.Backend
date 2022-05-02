@@ -1,9 +1,10 @@
-﻿namespace FlexDevSagas.Services.Orders.Dtos
+﻿using FlexDevSagas.Common.Dtos;
+
+namespace FlexDevSagas.Services.Orders.Dtos
 {
     public record OrderDetailsDto(
         Guid Id,
-        IEnumerable<Guid> Reservations,
-        Guid ScheduledMovieId,
+        IEnumerable<ReservedMovieDto> Movies,
         int TotalPrice,
         string OrderStatus);
 }

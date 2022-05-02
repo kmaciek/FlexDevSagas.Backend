@@ -1,4 +1,5 @@
 using FlexDevSagas.Common.Config;
+using FlexDevSagas.Common.Message;
 using FlexDevSagas.Common.Requests;
 using FlexDevSagas.Common.Responses;
 using FlexDevSagas.Services.Movies.Consumers;
@@ -39,6 +40,8 @@ builder.Services.AddMassTransit(cfg =>
         var endpointNameFormatter = x.GetRequiredService<IEndpointNameFormatter>();
         EndpointConvention.Map<GetScheduledMovieDetailsRequest>(new Uri($"queue:{endpointNameFormatter.Consumer<GetScheduledMovieDetailsRequestConsumer>()}"));
         EndpointConvention.Map<GetScheduledMovieDetailsResponse>(new Uri($"queue:{endpointNameFormatter.Message<GetScheduledMovieDetailsResponse>()}"));
+        EndpointConvention.Map<GetScheduledMoviesDetailsRequest>(new Uri($"queue:{endpointNameFormatter.Consumer<GetScheduledMovieDetailsRequestConsumer>()}"));
+        EndpointConvention.Map<GetScheduledMoviesDetailsResponse>(new Uri($"queue:{endpointNameFormatter.Message<GetScheduledMoviesDetailsResponse>()}"));
 
         y.ConfigureEndpoints(x);
     });

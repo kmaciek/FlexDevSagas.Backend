@@ -41,6 +41,7 @@ namespace FlexDevSagas.Services.Orders.Sagas.Order
             During(OrderCreated,
                 When(SeatsReserved)
                     .ThenAsync((context) => UpdateOrderStatus(context, OrderState.Reserved))
+                    .ThenAsync((context) => UpdateReservedSeats(context))
                     .TransitionTo(Reserved),
                 When(SeatsReservationRejected)
                     .ThenAsync((context) => UpdateOrderStatus(context, OrderState.Failed))
@@ -71,6 +72,16 @@ namespace FlexDevSagas.Services.Orders.Sagas.Order
             });
         }
 
+        private async Task UpdateReservedSeats(BehaviorContext<OrderSagaState, SeatsReservedEvent> context)
+        {
+            var message = new OrderReservationChangedEvent(
+                context.Saga.CorrelationId,
+                context.Saga.OrderId,
+                context.Message.ReservationIds);
+            
+            await context.Publish(message);
+        }
+
         async Task ReturnPayment(BehaviorContext<OrderSagaState, OrderCancelledEvent> context)
         {
             var message = new ReturnPaymentMessage(context.Saga.CorrelationId);
@@ -87,6 +98,7 @@ namespace FlexDevSagas.Services.Orders.Sagas.Order
         {
             var message = new ReserveSeatsMessage(context.Saga.CorrelationId,
                 context.Message.ScheduledMovieId,
+                context.Saga.OrderId,
                 context.Message.SeatIds);
 
             await context.Send(message);

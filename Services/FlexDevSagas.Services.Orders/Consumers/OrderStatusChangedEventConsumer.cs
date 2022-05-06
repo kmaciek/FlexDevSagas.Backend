@@ -2,6 +2,7 @@
 using FlexDevSagas.Services.Orders.Context;
 using FlexDevSagas.Services.Orders.Entities;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 
 namespace FlexDevSagas.Services.Orders.Consumers
 {
@@ -16,6 +17,7 @@ namespace FlexDevSagas.Services.Orders.Consumers
         
         public async Task Consume(ConsumeContext<OrderStatusChangedEvent> context)
         {
+            await _dbContext.Database.OpenConnectionAsync();
             var order = _dbContext.Orders.FirstOrDefault(x => x.Id == context.Message.OrderId);
 
             if (order == null)
@@ -25,6 +27,7 @@ namespace FlexDevSagas.Services.Orders.Consumers
             
             order.OrderState = (OrderState)context.Message.Status;
             await _dbContext.SaveChangesAsync();
+            await _dbContext.Database.CloseConnectionAsync();
         }
     }
 }

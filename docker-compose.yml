@@ -154,8 +154,8 @@ services:
       context: .
       dockerfile: Services/FlexDevSagas.Services.Orders/Dockerfile
     environment:
-      - ConnectionStrings__Database=Server=orders_database,1433;Database=Master;User Id=SA;Password=Pass@word;
-      - ConnectionStrings__SagaDatabase=Server=orderssaga_database,1433;Database=Master;User Id=SA;Password=Pass@word;
+      - ConnectionStrings__Database=Server=orders_database,1433;Database=Master;User Id=SA;Password=Pass@word;MultipleActiveResultSets=True;
+      - ConnectionStrings__SagaDatabase=Server=orderssaga_database,1433;Database=Master;User Id=SA;Password=Pass@word;MultipleActiveResultSets=True;
       - RabbitMQConfig__Host=rabbitmq
       - RabbitMQConfig__VirtualHost=FLEXDEVSAGAS
       - RabbitMQConfig__Username=guest

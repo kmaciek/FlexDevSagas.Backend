@@ -25,10 +25,11 @@ builder.Services.AddCors(options =>
     });
 });
 var connectionString = builder.Configuration.GetConnectionString("Database");
+var sagaConnectionString = builder.Configuration.GetConnectionString("SagaDatabase");
 builder.Services.AddDbContext<OrdersContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDbContext<OrderSagaDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(sagaConnectionString));
 
 var rabbitMqConfig = new RabbitMQConfig();
 builder.Configuration.Bind("RabbitMQConfig", rabbitMqConfig);
@@ -40,7 +41,6 @@ builder.Services.AddMassTransit(cfg =>
         .EntityFrameworkRepository(r =>
         {
             r.ConcurrencyMode = ConcurrencyMode.Pessimistic;
-            r.LockStatementProvider = new CustomSqlLockStatementProvider("OrderSagaStates");
 
             r.AddDbContext<DbContext, OrderSagaDbContext>((_, dbBuilder) =>
             {
